@@ -1,0 +1,160 @@
+#include <iostream>
+#include <vector>
+#include <string>
+
+class Exam {
+private:
+    std::string subject;
+    int grade;
+
+public:
+    Exam(const std::string& subject, int grade) : subject(subject), grade(grade) {}
+
+    int getGrade() const {
+        return grade;
+    }
+
+    void display() const {
+        std::cout << "Предмет: " << subject << ", Оцінка: " << grade << std::endl;
+    }
+};
+
+class Applicant {
+private:
+    std::string name;
+    std::string faculty;
+    std::vector<Exam> exams;
+
+public:
+    Applicant(const std::string& name, const std::string& faculty) : name(name), faculty(faculty) {}
+
+    const std::string& getName() const {
+        return name;
+    }
+
+    void addExam(const std::string& subject, int grade) {
+        exams.push_back(Exam(subject, grade));
+    }
+
+    void display() const {
+        std::cout << "Абітурієнт: " << name << std::endl;
+        std::cout << "Факультет: " << faculty << std::endl;
+        std::cout << "Оцінки:" << std::endl;
+        for (const Exam& exam : exams) {
+            exam.display();
+        }
+    }
+
+    double calculateAverageGrade() const {
+        double sum = 0.0;
+        for (const Exam& exam : exams) {
+            sum += exam.getGrade();
+        }
+        return sum / exams.size();
+    }
+};
+
+class AdmissionSystem {
+private:
+    std::vector<Applicant> applicants;
+
+public:
+    void registerApplicant(const std::string& name, const std::string& faculty) {
+        applicants.push_back(Applicant(name, faculty));
+    }
+
+    std::vector<Applicant>& getApplicants() {
+        return applicants;
+    }
+
+    std::vector<Applicant> getAdmittedApplicants(double minimumAverageGrade) const {
+        std::vector<Applicant> admittedApplicants;
+        for (const Applicant& applicant : applicants) {
+            double averageGrade = applicant.calculateAverageGrade();
+            if (averageGrade >= minimumAverageGrade) {
+                admittedApplicants.push_back(applicant);
+            }
+        }
+        return admittedApplicants;
+    }
+};
+
+void displayMenu() {
+    std::cout << "===== Меню Автоматизованої Системи =====" << std::endl;
+    std::cout << "1. Зареєструвати абітурієнта" << std::endl;
+    std::cout << "2. Вивести список абітурієнтів" << std::endl;
+    std::cout << "3. Додати оцінку абітурієнту" << std::endl;
+    std::cout << "4. Вивести зарахованих абітурієнтів" << std::endl;
+    std::cout << "5. Вийти з програми" << std::endl;
+    std::cout << "========================================" << std::endl;
+}
+
+int main() {
+    AdmissionSystem admissionSystem;
+
+    std::string name, faculty, subject;
+    int choice, grade;
+
+    while (true) {
+        displayMenu();
+        std::cout << "Виберіть опцію: ";
+        std::cin >> choice;
+
+        switch (choice) {
+            case 1:
+                std::cout << "Зареєструвати абітурієнта:" << std::endl;
+                std::cout << "Введіть ім'я: ";
+                std::cin.ignore();
+                std::getline(std::cin, name);
+                std::cout << "Введіть факультет: ";
+                std::getline(std::cin, faculty);
+
+                admissionSystem.registerApplicant(name, faculty);
+                break;
+            case 2:
+                std::cout << "Список абітурієнтів:" << std::endl;
+                for (const Applicant& applicant : admissionSystem.getApplicants()) {
+                    applicant.display();
+                    std::cout << "Середній бал: " << applicant.calculateAverageGrade() << std::endl;
+                    std::cout << std::endl;
+                }
+                break;
+            case 3:
+                std::cout << "Додати оцінку абітурієнту:" << std::endl;
+                std::cout << "Введіть ім'я абітурієнта: ";
+                std::cin.ignore();
+                std::getline(std::cin, name);
+                std::cout << "Введіть предмет: ";
+                std::getline(std::cin, subject);
+                std::cout << "Введіть оцінку: ";
+                std::cin >> grade;
+
+                // Знаходимо абітурієнта за ім'ям
+                for (Applicant& applicant : admissionSystem.getApplicants()) {
+                    if (applicant.getName() == name) {
+                        applicant.addExam(subject, grade);
+                        break;
+                    }
+                }
+                break;
+            case 4:
+                std::cout << "Зараховані абітурієнти з середнім балом вище 7:" << std::endl;
+                for (const Applicant& applicant : admissionSystem.getAdmittedApplicants(7.0)) {
+                    applicant.display();
+                    std::cout << "Середній бал: " << applicant.calculateAverageGrade() << std::endl;
+                    std::cout << std::endl;
+                }
+                break;
+            case 5:
+                std::cout << "Програма завершує роботу." << std::endl;
+                return 0;
+            default:
+                std::cout << "Некоректний вибір. Спробуйте ще раз." << std::endl;
+                break;
+        }
+
+        std::cout << std::endl;
+    }
+
+    return 0;
+}
